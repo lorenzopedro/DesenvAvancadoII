@@ -1,0 +1,17 @@
+Alterar os arquivos: credenciaisFirebase.js, StackNavigator.js, App.js
+
+Pedir pro Seek fazer os adicionais da atividade e só depois rodar os comandos.
+
+Comandos: 
+
+npm install --save-dev expo-cli
+
+npm install firebase
+
+npx expo install @react-navigation/native react-native-screens react-native-safe-area-context react-native-gesture-handler react-native-reanimated @react-native-masked-view/masked-view
+
+npm install @react-navigation/stack
+
+npx expo install @react-native-async-storage/async-storage
+
+npx expo start --tunnel
