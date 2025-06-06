@@ -1,45 +1,46 @@
-// src/screens/LoginScreen.js
-import React, { useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, Alert } from 'react-native';
-import auth from '../services/credenciaisFirebaseAuth';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import globalStyles from '../styles/globalStyles';
+// ... (imports)
+import { useAuth } from '../hooks/useFirebase';
+import { firestore } from '../services/credenciaisFirebase';
+import { doc, getDoc } from 'firebase/firestore';
 
-export default function LoginScreen({ navigation }) {
+const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
+  const [password, setPassword] = useState('');
+  const { login } = useAuth();
 
   const handleLogin = async () => {
     try {
-      await signInWithEmailAndPassword(auth, email, senha);
-      Alert.alert('Sucesso', 'Logado com sucesso!');
-      navigation.navigate('UserList');
+      const userCredential = await login(email, password);
+      const user = userCredential.user;
+
+      // Buscar o perfil do usuário no Firestore
+      const userDoc = await getDoc(doc(firestore, 'users', user.uid));
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        // Redirecionar com base no perfil
+        switch (userData.role) {
+          case 'admin':
+            navigation.replace('AdminDashboard');
+            break;
+          case 'aluno':
+            navigation.replace('StudentDashboard');
+            break;
+          case 'avaliador':
+            navigation.replace('EvaluatorDashboard');
+            break;
+          default:
+            navigation.replace('Login'); // Fallback
+        }
+      } else {
+         Alert.alert('Erro', 'Perfil de usuário não encontrado.');
+      }
     } catch (error) {
-      Alert.alert('Erro', 'Falha no login');
-      console.error(error);
+      Alert.alert('Erro de Login', error.message);
     }
   };
+  
+  // ... (return com a UI do formulário de login)
+};
 
-  return (
-    <View style={globalStyles.container}>
-      <Text style={globalStyles.title}>Login</Text>
-      <TextInput
-        placeholder="Email"
-        style={globalStyles.input}
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-      />
-      <TextInput
-        placeholder="Senha"
-        style={globalStyles.input}
-        secureTextEntry
-        value={senha}
-        onChangeText={setSenha}
-      />
-      <TouchableOpacity style={globalStyles.button} onPress={handleLogin}>
-        <Text style={globalStyles.buttonText}>Entrar</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
+export default LoginScreen;
